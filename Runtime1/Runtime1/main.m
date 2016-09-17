@@ -11,6 +11,8 @@
 #import "Dog.h"
 #import <objc/message.h>
 
+
+
 int main(int argc, const char * argv[]) {
     
         Animal *a=[[Animal alloc] init];
@@ -327,7 +329,7 @@ int main(int argc, const char * argv[]) {
     
         initTypes = [[NSString stringWithFormat: @"%s%s",  @encode(id), @encode(SEL)] UTF8String];
         class_addMethod(newClass, @selector(justPrint), newMethodIMP, initTypes);
-        justPrint = @selector(justPrint);
+        justPrint = sel_registerName("justPrint");
         [newObject performSelector:justPrint];
     
     
@@ -339,9 +341,9 @@ int main(int argc, const char * argv[]) {
         NSString *tail = object_getIvar(newObject, ivar);
         NSLog(@"%@",tail);
     
-        //doubt
     
-        NSLog(@"%@",object_getClassName(newObject));
+        NSLog(@"%s",object_getClassName(newObject));
+    
 
         //doubt
         struct objc_super superInfo={
@@ -352,8 +354,44 @@ int main(int argc, const char * argv[]) {
         // objc_msgSendSuper(&superInfo,@selector(justPrint));
     
     
+      int numClasses;
+      Class *classes = NULL;
+    
+        classes = NULL;
+        numClasses = objc_getClassList(NULL, 0);
+        NSLog(@"Number of classes: %d", numClasses);
+    
+        if (numClasses > 0 )
+        {
+            classes = (__unsafe_unretained Class *)malloc(sizeof(Class) * numClasses);
+            numClasses = objc_getClassList(classes, numClasses);
+            for (int i = 0; i < numClasses; i++) {
+                NSLog(@"Class name: %s", class_getName(classes[i]));
+            }
+            free(classes);
+        }
+    
+    NSLog(@"--------------");
+    classes = NULL;
     
     
+    unsigned ccount;
+    classes = objc_copyClassList( &ccount );
+    for (unsigned i=0 ; i<ccount ; i++) {
+        if(class_getSuperclass(classes[i])==[c class])
+        {
+            NSLog(@"Class name: %s", class_getName(classes[i]));
+        }
+    }
+    
+    
+    id handlerClass = objc_lookUpClass([@"Dog" cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+    id myObject = [[handlerClass alloc]init];
+    NSLog(@"%d",[myObject somemethod]);
+    
+    meth = class_getClassMethod(myClass, @selector(initialize));
+    NSLog(@"%s",method_getName(meth));
+    NSLog(@"%s",method_copyReturnType(meth));
     
     
     return 0;
